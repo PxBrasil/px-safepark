@@ -15,9 +15,7 @@ const nameColecao = "produtos";
 
 import db from "../db/conn.mjs";
 
-
-
-const url = 'https://app.omie.com.br/api/v1/';
+const url = process.env.URL;
 const hoje = new Date();
 
 const chaveFF = {
@@ -28,6 +26,11 @@ const chaveGF = {
     app_key: process.env.CHAVEGF,
     app_secret: process.env.SEGREDOGF,
 }
+
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
+const emailHost = process.env.EMAIL_HOST;
+const emailList = process.env.EMAIL_LIST;
 
 async function verificarEstoque(dias) {
     const diasAtras = subDays(hoje, dias);
@@ -223,18 +226,18 @@ async function estoqueMinimo() {
 async function email(produto) {
     let transporter = nodemailer.createTransport({
         // service: 'dreamhost',
-        host: 'smtp.dreamhost.com',
+        host: emailHost,
         port: 465,
         // secure: true,
         auth: {
-            user: "estoque@safeparksinalizacao.com",
-            pass: "Safepark10!"
+            user: emailUser,
+            pass: emailPass
         }
     });
 
     const mailOptions = {
-        from: "estoque@safeparksinalizacao.com",
-        to: 'pablo.oliveira77@outlook.com.br, ray@plenitudex.com',
+        from: emailUser,
+        to: emailList,
         subject: 'Relatório de Estoque',
         text: produto
     };
@@ -275,10 +278,17 @@ async function excluirBD(cod) {
     }
 }
 
+async function teste() {
+    console.log('Teste');
+    // console.log(process.env.EMAIL_LIST);
+    await email('Teste de email');
+}
+
 export default {
     verificarEstoque,
     atualizar,
     estoqueMinimo,
     excluirBD,
-    email
+    email,
+    teste
 };
