@@ -155,7 +155,7 @@ async function updateOneMongo(obj) {
         );
         console.log(`Produto ${JSON.stringify(respostaDB)} atualizado!`);
         // return respostaDB._id;
-    }
+}
 
 async function estoqueMinimo() {
     try {
@@ -189,7 +189,6 @@ async function estoqueMinimo() {
             // Entra na função buscaEstoque() com código do produto e as chaves
             const buscaFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
 
-            // console.log(buscaFF.listaEstoque[0], buscaGF.listaEstoque[0]);
             // Faz calculo para saber Saldo do Estoque
             if (buscaFF.listaEstoque[0] !== undefined) {
                 const saldo = buscaFF.listaEstoque[0].fisico + buscaGF.listaEstoque[0].fisico
@@ -279,8 +278,6 @@ async function excluirBD(cod) {
 }
 
 async function teste() {
-    console.log('Teste');
-    // console.log(process.env.EMAIL_LIST);
     await email('Teste de email');
 }
 
