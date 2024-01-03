@@ -18,4 +18,16 @@ router.get('/atualizar', function(req, res, next) {
     res.send('Essa rota irá atualizar o produto ' + req.query.codigo);
 });
 
+router.get('/estoqueMinimo', function(req, res, next) {
+    px.estoqueMinimo()
+    next();
+    res.send('Essa rota irá atualizar o estoque mínimo!');
+});
+
+router.get('/excluirBD', function(req, res, next) {
+    px.excluirBD(req.query.codigo)
+    next();
+    res.send('Essa rota irá excluir o produto ' + req.query.codigo);
+});
+
 export default router;
