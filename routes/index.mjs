@@ -1,6 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import px from '../swisscamp/px.mjs'
+import cron from 'node-cron';
 
 router.get('/', (req, res) => {
     res.send('Bem vindo ao servidor Safepark!');
@@ -8,6 +9,10 @@ router.get('/', (req, res) => {
 
 router.get('/start', function(req, res, next) {
     px.verificarEstoque(req.query.dias);
+    // Fazer todo dia as 8:00
+    cron.schedule('0 8 * * *', () => {
+        px.verificarEstoque('2');
+    });
     next();
     res.send('Essa rota irá começar a atualizar os produtos!');
 });
@@ -20,6 +25,10 @@ router.get('/atualizar', function(req, res, next) {
 
 router.get('/estoqueMinimo', function(req, res, next) {
     px.estoqueMinimo()
+    // Faz toda segunda as 8:00
+    cron.schedule('0 8 * * 1', () => {
+        px.estoqueMinimo();
+    });
     next();
     res.send('Essa rota irá atualizar o estoque mínimo!');
 });

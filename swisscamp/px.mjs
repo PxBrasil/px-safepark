@@ -129,7 +129,7 @@ async function atualizar(codigo) {
         "saldoEstoqueGF": saldoEstoqueGF?.listaEstoque[0]?.nSaldo,
         "saldoEstoqueTotal": saldoEstoqueTotal,
     }
-    console.log(modelo);
+    // console.log(modelo);
     await updateOneMongo(modelo);
 }
 
@@ -143,7 +143,7 @@ async function updateOneMongo(obj) {
         },
         { upsert: true } // Atualiza se existir, insere se não existir
         );
-        console.log(`Produto ${JSON.stringify(respostaDB)} atualizado!`);
+        console.log(`Produto ${respostaDB.codigo} atualizado!`);
         // return respostaDB._id;
 }
 
@@ -208,7 +208,7 @@ async function estoqueMinimo() {
         console.error(e);
     } finally {
         // Finalizar o processo do mongo
-        await client.close();
+        // await client.close();
     }
 }
 
