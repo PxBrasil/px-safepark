@@ -3,16 +3,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
 import nodemailer from 'nodemailer';
-import { MongoClient } from "mongodb";
-const connectionString = process.env.ATLAS_URI || "";
-const client = new MongoClient(connectionString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
-await client.connect();
-const nameBD = "SafePark";
-const nameColecao = "produtos";
-
 import db from "../db/conn.mjs";
 
 const url = process.env.URL;
@@ -263,16 +253,13 @@ async function excluirBD(cod) {
         try {
 
             // Excluir no banco de dados caso não exista no Omie
-            await client.db(nameBD).collection(nameColecao).deleteOne(
+            await db.collection('produtos').deleteOne(
                 { codigo: cod }
             );
             console.log(`Produto ${cod} excluido!`);
 
         } catch (e) {
             console.error(e);
-        } finally {
-            // Close the connection to the MongoDB cluster
-            // await client.close();
         }
     }
 }
