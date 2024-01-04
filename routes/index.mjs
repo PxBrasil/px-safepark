@@ -8,18 +8,16 @@ router.get('/', (req, res) => {
 });
 
 router.get('/start', function(req, res, next) {
-    px.verificarEstoque(req.query.dias);
+    px.verificarEstoque(req.query.dias || "3");
     // Fazer todo dia as 8:00
     cron.schedule('0 8 * * *', () => {
         px.verificarEstoque('2');
     });
-    next();
     res.send('Essa rota irá começar a atualizar os produtos!');
 });
 
 router.get('/atualizar', function(req, res, next) {
     px.atualizar(req.query.codigo)
-    next();
     res.send('Essa rota irá atualizar o produto ' + req.query.codigo);
 });
 
@@ -29,13 +27,11 @@ router.get('/estoqueMinimo', function(req, res, next) {
     cron.schedule('0 8 * * 1', () => {
         px.estoqueMinimo();
     });
-    next();
     res.send('Essa rota irá atualizar o estoque mínimo!');
 });
 
 router.get('/excluirBD', function(req, res, next) {
     px.excluirBD(req.query.codigo)
-    next();
     res.send('Essa rota irá excluir o produto ' + req.query.codigo);
 });
 
