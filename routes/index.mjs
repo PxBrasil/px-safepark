@@ -9,9 +9,9 @@ router.get('/', (req, res) => {
 
 router.get('/start', function(req, res, next) {
     px.verificarEstoque(req.query.dias || "3");
-    // Fazer todo dia as 8:00
-    cron.schedule('0 8 * * *', () => {
-        px.verificarEstoque('2');
+    // Fazer de hora em hora
+    cron.schedule('0 * * * *', () => {
+        px.verificarEstoque(req.query.dias || "3");
     });
     res.send('Essa rota irá começar a atualizar os produtos!');
 });
@@ -23,8 +23,8 @@ router.get('/atualizar', function(req, res, next) {
 
 router.get('/estoqueMinimo', function(req, res, next) {
     px.estoqueMinimo()
-    // Faz toda segunda as 8:00
-    cron.schedule('0 8 * * 1', () => {
+    // Fazer todo dia as 18h
+    cron.schedule('0 18 * * *', () => {
         px.estoqueMinimo();
     });
     res.send('Essa rota irá atualizar o estoque mínimo!');

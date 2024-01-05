@@ -155,7 +155,7 @@ async function estoqueMinimo() {
         // console.log('DADOS FF')
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
-        for (let i = 0; i < codProd.length; i++) {
+        for (let i = 500; i < codProd.length; i++) {
             var data = hoje.toLocaleDateString()
             console.log("Linha:", i+1, "de", codProd.length)
             console.log("Produto: ", codProd[i].codigo)
@@ -181,14 +181,16 @@ async function estoqueMinimo() {
 
             // Faz calculo para saber Saldo do Estoque
             if (buscaFF.listaEstoque[0] !== undefined) {
-                const saldo = buscaFF.listaEstoque[0].fisico + buscaGF.listaEstoque[0].fisico
+                const saldoFF = buscaFF.listaEstoque[0].fisico - 100000;
+                const saldoGF = buscaGF.listaEstoque[0].fisico;
+                const saldo = saldoFF + saldoGF;
                 if (buscaFF.listaEstoque[0].nEstoqueMinimo != 0) {
                     if (saldo < buscaFF.listaEstoque[0].nEstoqueMinimo) {
                         console.log("Estoque abaixo do mínimo!!");
                         const dados = "Código Geral: " + codProd[i].codigo +
                             "\n Descrição: " + codProd[i].descricao +
-                            "\n Código FF: " + codProd[i].codigoFF + " = " + buscaFF.listaEstoque[0].fisico + " Quantidades" +
-                            "\n Código GF: " + codProd[i].codigoGF + " = " + buscaGF.listaEstoque[0].fisico + " Quantidades" +
+                            "\n Código FF: " + codProd[i].codigoFF + " = " + saldoFF + " Quantidades" +
+                            "\n Código GF: " + codProd[i].codigoGF + " = " + saldoGF + " Quantidades" +
                             "\n Estoque Mínimo: " + buscaFF.listaEstoque[0].nEstoqueMinimo +
                             "\n Saldo: " + saldo + "\n ----------------------\n"
                         produto = produto.concat(dados)
