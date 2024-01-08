@@ -51,14 +51,20 @@ async function verificarEstoque(dias) {
             param[0].pagina = contador;
             const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param)
             for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
-                setTimeout (() => {
-                    const element = resposta.produto_servico_resumido[i];
-                    console.log(`${i+1} de ${resposta.produto_servico_resumido.length} - ${element.codigo}`);
-                    fetch('http://localhost:3000/atualizar?codigo=' + element.codigo)
-                }, i * 5000);
+                setTimeout(() => {
+                    console.log(`Página ${contador} - ${i+1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
+                    fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo)
+                }, i * 3000);
             }
+            await esperar(150000)
         }
     }
+}
+
+async function esperar(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }
 
 async function consultaProdutosAtualizados(empresa, metodo, url, param) {
@@ -143,7 +149,7 @@ async function updateOneMongo(obj) {
         },
         { upsert: true } // Atualiza se existir, insere se não existir
         );
-        console.log(`Produto ${respostaDB.codigo} atualizado!`);
+        console.log(`Produto ${respostaDB?.codigo} atualizado!`);
         // return respostaDB._id;
 }
 
@@ -266,15 +272,10 @@ async function excluirBD(cod) {
     }
 }
 
-async function teste() {
-    await email('Teste de email');
-}
-
 export default {
     verificarEstoque,
     atualizar,
     estoqueMinimo,
     excluirBD,
-    email,
-    teste
+    email
 };
