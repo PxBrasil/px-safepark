@@ -161,7 +161,7 @@ async function estoqueMinimo() {
         // console.log('DADOS FF')
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
-        for (let i = 500; i < codProd.length; i++) {
+        for (let i = 0; i < codProd.length; i++) {
             var data = hoje.toLocaleDateString()
             console.log("Linha:", i+1, "de", codProd.length)
             console.log("Produto: ", codProd[i].codigo)
