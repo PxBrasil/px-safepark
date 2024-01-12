@@ -187,8 +187,9 @@ async function estoqueMinimo() {
 
             // Faz calculo para saber Saldo do Estoque
             if (buscaFF.listaEstoque[0] !== undefined) {
+                console.log("ESTOQUES", buscaFF.listaEstoque[0].fisico, buscaGF.listaEstoque[0].fisico);
                 const saldoFF = buscaFF.listaEstoque[0].fisico - 100000;
-                const saldoGF = buscaGF.listaEstoque[0].fisico;
+                const saldoGF = buscaGF.listaEstoque[0].fisico || 0;
                 const saldo = saldoFF + saldoGF;
                 if (buscaFF.listaEstoque[0].nEstoqueMinimo != 0) {
                     if (saldo < buscaFF.listaEstoque[0].nEstoqueMinimo) {

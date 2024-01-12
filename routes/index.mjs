@@ -23,8 +23,10 @@ router.get('/atualizar', function(req, res, next) { // /atualizar?codigo=SINISO0
 
 router.get('/estoqueMinimo', function(req, res, next) { // /estoqueMinimo
     px.estoqueMinimo()
+    console.log(new Date());
     // Fazer todo dia as 18h10
-    cron.schedule('0 18 10 * *', () => {
+    cron.schedule('10 18 * * *', () => {
+        console.log("Entrou atualização as 9h",new Date());
         px.estoqueMinimo();
     });
     res.send('Essa rota irá atualizar o estoque mínimo!');
