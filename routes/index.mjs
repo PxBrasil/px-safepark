@@ -8,9 +8,11 @@ router.get('/', (req, res) => {
 });
 
 router.get('/start', function(req, res, next) { // /start?dias=3 ou /start
+    console.log("Atualização de Estoque -",new Date().toLocaleString());
     px.verificarEstoque(req.query.dias || "3");
     // Fazer de hora em hora
     cron.schedule('0 * * * *', () => {
+        console.log("Atualização de Estoque -",new Date().toLocaleString());
         px.verificarEstoque(req.query.dias || "3");
     });
     res.send('Essa rota irá começar a atualizar os produtos!');
@@ -22,11 +24,11 @@ router.get('/atualizar', function(req, res, next) { // /atualizar?codigo=SINISO0
 });
 
 router.get('/estoqueMinimo', function(req, res, next) { // /estoqueMinimo
+    console.log("Estoque mínimo",new Date().toLocaleString());
     px.estoqueMinimo()
-    console.log(new Date());
     // Fazer todo dia as 18h10
     cron.schedule('10 18 * * *', () => {
-        console.log("Entrou atualização as 9h",new Date());
+        console.log("Estoque mínimo -",new Date().toLocaleString());
         px.estoqueMinimo();
     });
     res.send('Essa rota irá atualizar o estoque mínimo!');
