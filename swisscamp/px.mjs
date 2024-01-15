@@ -36,8 +36,6 @@ async function verificarEstoque(dias) {
             "inativo": "N",
             "ordenar_por": "CODIGO_PRODUTO",
             "ordem_decrescente": "S",
-            "filtrar_apenas_alteracao": "S",
-            "filtrar_por_data_de": DataFormat,
         }
     ]
 
@@ -162,6 +160,8 @@ async function estoqueMinimo() {
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
         for (let i = 0; i < codProd.length; i++) {
+            // Pausa de 3 segundos para não dar erro no Omie
+            await esperar(3000)
             var data = hoje.toLocaleDateString()
             console.log("Linha:", i+1, "de", codProd.length)
             console.log("Produto: ", codProd[i].codigo)
@@ -187,22 +187,28 @@ async function estoqueMinimo() {
 
             // Faz calculo para saber Saldo do Estoque
             if (buscaFF.listaEstoque[0] !== undefined) {
-                console.log("ESTOQUES", buscaFF.listaEstoque[0].fisico, buscaGF.listaEstoque[0].fisico);
-                const saldoFF = buscaFF.listaEstoque[0].fisico - 100000;
-                const saldoGF = buscaGF.listaEstoque[0].fisico || 0;
-                const saldo = saldoFF + saldoGF;
-                if (buscaFF.listaEstoque[0].nEstoqueMinimo != 0) {
-                    if (saldo < buscaFF.listaEstoque[0].nEstoqueMinimo) {
-                        console.log("Estoque abaixo do mínimo!!");
-                        const dados = "Código Geral: " + codProd[i].codigo +
-                            "\n Descrição: " + codProd[i].descricao +
-                            "\n Código FF: " + codProd[i].codigoFF + " = " + saldoFF + " Quantidades" +
-                            "\n Código GF: " + codProd[i].codigoGF + " = " + saldoGF + " Quantidades" +
-                            "\n Estoque Mínimo: " + buscaFF.listaEstoque[0].nEstoqueMinimo +
-                            "\n Saldo: " + saldo + "\n ----------------------\n"
-                        produto = produto.concat(dados)
+                if (buscaFF.listaEstoque[0].fisico !== undefined) {
+                    console.log("ESTOQUES", buscaFF.listaEstoque[0].fisico, buscaGF.listaEstoque[0].fisico);
+                    const saldoFF = buscaFF.listaEstoque[0].fisico - 100000;
+                    const saldoGF = buscaGF.listaEstoque[0].fisico || 0;
+                    const saldo = saldoFF + saldoGF;
+                    if (buscaFF.listaEstoque[0].nEstoqueMinimo != 0) {
+                        if (saldo < buscaFF.listaEstoque[0].nEstoqueMinimo) {
+                            console.log("Estoque abaixo do mínimo!!");
+                            const dados = "Código Geral: " + codProd[i].codigo +
+                                "\n Descrição: " + codProd[i].descricao +
+                                "\n Código FF: " + codProd[i].codigoFF + " = " + saldoFF + " Quantidades" +
+                                "\n Código GF: " + codProd[i].codigoGF + " = " + saldoGF + " Quantidades" +
+                                "\n Estoque Mínimo: " + buscaFF.listaEstoque[0].nEstoqueMinimo +
+                                "\n Saldo: " + saldo + "\n ----------------------\n"
+                            produto = produto.concat(dados)
+                        }
                     }
                 }
+                else {
+                    console.log("Não encontrou estoque no produto", codProd[i].codigo);
+                }
+
             }
             else {
                 console.log("Não tem estoque");
