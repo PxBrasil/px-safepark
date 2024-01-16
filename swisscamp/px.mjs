@@ -4,6 +4,7 @@ dotenv.config();
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 import db from "../db/conn.mjs";
+import fs from 'fs';
 
 const url = process.env.URL;
 const hoje = new Date();
@@ -39,23 +40,59 @@ async function verificarEstoque(dias) {
         }
     ]
 
-    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url+'/geral/produtos/', param)
+    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumio', url+'/geral/produtos/', param)
 
-    if (respostaFF !== undefined) {
-        var pags = respostaFF.total_de_paginas;
+    try {
+        if (respostaFF !== undefined) {
+            var pags = respostaFF.total_de_paginas;
 
-        while (contador < pags) {
-            contador++;
-            param[0].pagina = contador;
-            const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param)
-            for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
-                setTimeout(() => {
-                    console.log(`Página ${contador} - ${i+1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
-                    fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo)
-                }, i * 3000);
+            while (contador < pags) {
+                contador++;
+                param[0].pagina = contador;
+                const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumid', url + '/geral/produtos/', param);
+
+                for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
+                    setTimeout(() => {
+                        console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
+                        fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
+                    }, i * 3000);
+                }
+
+                await esperar(150000);
             }
-            await esperar(150000)
         }
+    } catch (error) {
+        const errorMessage = `Ocorreu um erro durante a execução - VerificarEstoque()`;
+        console.error(errorMessage, error.code, new Date().toLocaleString());
+        await logResponse(errorMessage, error.code, 'errorLog');
+    }
+
+}
+
+async function logResponse(title, message, arquivo) {
+    // Cria um objeto com informações sobre o erro
+    const errorInfo = {
+        titulo: title,
+        Message: message,
+        timestamp: new Date().toLocaleString()
+    };
+    try {
+        // Lê o conteúdo atual do arquivo 'errorLog.json'
+        console.log("Conseguiu ler");
+        const currentContent = await fs.readFile('errorLog.json', 'utf-8');
+        const currentData = JSON.parse(currentContent);
+        currentData.push(errorInfo);
+        const newDataJson = JSON.stringify(currentData, null, 2);
+        console.log('Entrou aqui');
+
+        // Escreve o novo JSON de volta no arquivo 'errorLog.json'
+        // await fs.writeFile(arquivo + '.json', newDataJson);
+
+    } catch (readError) {
+        // Se ocorrer um erro ao ler o arquivo, apenas escreva o novo objeto JSON sem adicionar ao conteúdo existente
+        console.log("Errou, ta aqui kkkk");
+        const newDataJson = JSON.stringify([errorInfo], null, 2);
+        // fs.appendFileSync(arquivo + '.json', newDataJson);
     }
 }
 
@@ -83,14 +120,18 @@ async function consultaProdutosAtualizados(empresa, metodo, url, param) {
     data : data
     };
 
-    const response = await axios.request(config)
-    .then((response) => {
-    return response.data;
-    })
-    .catch((error) => {
-        console.log("Erro a consultar produto: ", metodo, error.code);
-    });
-    return response;
+
+try {
+    const response = await axios.request(config);
+    const data = response.data;
+
+    return data;
+} catch (error) {
+    const errorMessage = `Erro ao consultar Produtos: ${metodo}`;
+    console.error(errorMessage, error.code, new Date().toLocaleString());
+    await logResponse(errorMessage, error.code, 'errorLog');
+}
+
 }
 
 async function atualizar(codigo) {
@@ -148,7 +189,10 @@ async function updateOneMongo(obj) {
         { upsert: true } // Atualiza se existir, insere se não existir
         );
         console.log(`Produto ${respostaDB?.codigo} atualizado!`);
-        // return respostaDB._id;
+        const successMessage = `Atualização bem sucedida:`;
+        await logResponse(successMessage, obj.codigo, 'successLog');
+
+
 }
 
 async function estoqueMinimo() {
@@ -221,38 +265,47 @@ async function estoqueMinimo() {
 
     } catch (e) {
         console.error(e);
+        // Escreve no arquivo .txt em caso de erro
+        const errorMessage = `Ocorreu um erro durante a execução - EstoqueMinimo()- ${e}, ${new Date().toLocaleString()}\n`;
+        fs.appendFileSync('errors.txt', errorMessage);
     } finally {
         // Finalizar o processo do mongo
-        // await client.close();
     }
 }
 
 async function email(produto) {
-    let transporter = nodemailer.createTransport({
-        // service: 'dreamhost',
-        host: emailHost,
-        port: 465,
-        // secure: true,
-        auth: {
-            user: emailUser,
-            pass: emailPass
-        }
-    });
+    try {
+        let transporter = nodemailer.createTransport({
+            // service: 'dreamhost',
+            host: emailHost,
+            port: 465,
+            // secure: true,
+            auth: {
+                user: emailUser,
+                pass: emailPass
+            }
+        });
 
-    const mailOptions = {
-        from: emailUser,
-        to: emailList,
-        subject: 'Relatório de Estoque',
-        text: produto
-    };
+        const mailOptions = {
+            from: emailUser,
+            to: emailList,
+            subject: 'Relatório de Estoque',
+            text: produto
+        };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('E-mail enviado: ' + info.response);
-        }
-    });
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('E-mail enviado: ' + info.response);
+            }
+        });
+    } catch (error) {
+        console.log("Erro ao enviar e-mail: ", error.code, new Date().toLocaleString());
+        // Escreve no arquivo .txt em caso de erro
+        const errorMessage = `Erro ao enviar e-mail: ${error.code}, ${new Date().toLocaleString()}\n`;
+        fs.appendFileSync('errors.txt', errorMessage);
+    }
 }
 
 async function excluirBD(cod) {
