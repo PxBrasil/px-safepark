@@ -4,7 +4,9 @@ dotenv.config();
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 import db from "../db/conn.mjs";
-import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+
+
 
 const url = process.env.URL;
 const hoje = new Date();
@@ -40,32 +42,33 @@ async function verificarEstoque(dias) {
         }
     ]
 
-    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumio', url+'/geral/produtos/', param)
+    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url+'/geral/produtos/', param);
 
-    try {
         if (respostaFF !== undefined) {
             var pags = respostaFF.total_de_paginas;
 
-            while (contador < pags) {
-                contador++;
-                param[0].pagina = contador;
-                const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumid', url + '/geral/produtos/', param);
+            try {
+                while (contador < pags) {
+                    contador++;
+                    param[0].pagina = contador;
+                    const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param);
 
-                for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
-                    setTimeout(() => {
-                        console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
-                        fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
-                    }, i * 3000);
+                    for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
+                        setTimeout(() => {
+                            console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
+                            fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
+                        }, i * 3000);
+                    }
+                    await esperar(150000);
                 }
-
-                await esperar(150000);
+            } catch (error) {
+                // Escreve no arquivo .json em caso de erro
+                const errorMessage = `Erro ao consultar produtos: verificarEstoque()`;
+                console.log(errorMessage, error, new Date().toLocaleString());
+                await logResponse(errorMessage, "Cannot read properties of undefined (reading 'produto_servico_resumido')", 'errorLog');
             }
         }
-    } catch (error) {
-        const errorMessage = `Ocorreu um erro durante a execução - VerificarEstoque()`;
-        console.error(errorMessage, error.code, new Date().toLocaleString());
-        await logResponse(errorMessage, error.code, 'errorLog');
-    }
+
 
 }
 
@@ -78,21 +81,19 @@ async function logResponse(title, message, arquivo) {
     };
     try {
         // Lê o conteúdo atual do arquivo 'errorLog.json'
-        console.log("Conseguiu ler");
-        const currentContent = await fs.readFile('errorLog.json', 'utf-8');
+        const currentContent = await fsPromises.readFile(arquivo+'.json', 'utf-8');
         const currentData = JSON.parse(currentContent);
         currentData.push(errorInfo);
         const newDataJson = JSON.stringify(currentData, null, 2);
-        console.log('Entrou aqui');
 
         // Escreve o novo JSON de volta no arquivo 'errorLog.json'
-        // await fs.writeFile(arquivo + '.json', newDataJson);
+        await fsPromises.writeFile(arquivo + '.json', newDataJson);
 
     } catch (readError) {
         // Se ocorrer um erro ao ler o arquivo, apenas escreva o novo objeto JSON sem adicionar ao conteúdo existente
-        console.log("Errou, ta aqui kkkk");
         const newDataJson = JSON.stringify([errorInfo], null, 2);
-        // fs.appendFileSync(arquivo + '.json', newDataJson);
+        fsPromises.appendFile(arquivo + '.json', newDataJson);
+        return undefined;
     }
 }
 
@@ -265,9 +266,9 @@ async function estoqueMinimo() {
 
     } catch (e) {
         console.error(e);
-        // Escreve no arquivo .txt em caso de erro
-        const errorMessage = `Ocorreu um erro durante a execução - EstoqueMinimo()- ${e}, ${new Date().toLocaleString()}\n`;
-        fs.appendFileSync('errors.txt', errorMessage);
+        // Escreve no arquivo .json em caso de erro
+        const errorMessage = `Ocorreu um erro durante a execução - EstoqueMinimo()`;
+        await logResponse(errorMessage, e.code, 'errorLog');
     } finally {
         // Finalizar o processo do mongo
     }
@@ -302,9 +303,9 @@ async function email(produto) {
         });
     } catch (error) {
         console.log("Erro ao enviar e-mail: ", error.code, new Date().toLocaleString());
-        // Escreve no arquivo .txt em caso de erro
-        const errorMessage = `Erro ao enviar e-mail: ${error.code}, ${new Date().toLocaleString()}\n`;
-        fs.appendFileSync('errors.txt', errorMessage);
+        // Escreve no arquivo .json em caso de erro
+        const errorMessage = `Erro ao enviar e-mail: email()`;
+        await logResponse(errorMessage, error.code, 'errorLog');
     }
 }
 

@@ -1,7 +1,97 @@
 [
   {
-    "titulo": "Erro ao consultar Produtos: ListarProdutosResumio",
+    "titulo": "Erro ao consultar Produtos: ListarProdutosResumid",
     "Message": "ERR_BAD_RESPONSE",
-    "timestamp": "16/01/2024, 10:07:47"
+    "timestamp": "16/01/2024, 10:33:55"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ETIMEDOUT",
+    "timestamp": "16/01/2024, 10:59:03"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ListarProdutosResumido",
+    "Message": "ETIMEDOUT",
+    "timestamp": "16/01/2024, 10:59:07"
+  },
+  {
+    "titulo": "Erro ao consultar produtos: verificarEstoque()",
+    "Message": "Cannot read properties of undefined (reading 'produto_servico_resumido')",
+    "timestamp": "16/01/2024, 10:59:07"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:11"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:13"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:13"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:13"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:13"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:16"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:16"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:20"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:20"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:07:20"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:14:42"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:14:42"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ObterEstoqueProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:14:45"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:14:45"
+  },
+  {
+    "titulo": "Erro ao consultar Produtos: ConsultarProduto",
+    "Message": "ERR_BAD_RESPONSE",
+    "timestamp": "16/01/2024, 12:14:49"
   }
 ]
