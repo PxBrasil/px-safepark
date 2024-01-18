@@ -68,6 +68,9 @@ async function verificarEstoque(dias) {
                 await logResponse(errorMessage, "Cannot read properties of undefined (reading 'produto_servico_resumido')", 'errorLog');
             }
         }
+        else {
+            console.log("Não encontrou produtos");
+        }
 
 
 }
