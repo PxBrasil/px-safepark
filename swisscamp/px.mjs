@@ -156,23 +156,29 @@ async function atualizar(codigo) {
         ]
 
         let estoque = 0;
+        let estoqueMinimo = 0;
         let sdFF = 0
-        let sdGF = 0 
+        let sdGF = 0
 
         const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-        estoque = [
-            {
-                nIdProduto: respostaFF?.codigo_produto,
-                dDia: dataHoje,
-            }
-        ]
+        if (respostaFF.codigo_produto !== undefined) {
+            console.log("Não encontrou o produto no Omie");
+            estoque = [
+                {
+                    nIdProduto: respostaFF?.codigo_produto,
+                    dDia: dataHoje,
+                }
+            ]
+            const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
 
-        const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-        
-        sdFF = saldoEstoqueFF?.listaEstoque[0]?.nSaldo
-        
+            sdFF = saldoEstoqueFF.listaEstoque[0].nSaldo
+
+            estoqueMinimo = saldoEstoqueFF.listaEstoque[0].nEstoqueMinimo
+
+        }
+
         const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-               
+
         if (respostaGF.codigo_produto !== undefined) {
             estoque = [
                 {
@@ -183,7 +189,7 @@ async function atualizar(codigo) {
             const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
             sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0
         }
-                
+
 
         const saldoEstoqueTotal = sdFF + sdGF;
 
@@ -197,7 +203,7 @@ async function atualizar(codigo) {
             "saldoEstoqueFF": sdFF,
             "saldoEstoqueGF": sdGF,
             "saldoEstoqueTotal": saldoEstoqueTotal,
-            "EstoqueMinimo": saldoEstoqueFF?.listaEstoque[0]?.nEstoqueMinimo
+            "EstoqueMinimo": estoqueMinimo
         }
         console.log(modelo);
         await updateOneMongo(modelo);
