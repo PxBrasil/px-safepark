@@ -42,35 +42,40 @@ async function verificarEstoque(dias) {
         }
     ]
 
-    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url+'/geral/produtos/', param);
+    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param);
+    await esperar(2000)
 
-        if (respostaFF !== undefined) {
-            var pags = respostaFF.total_de_paginas;
+    if (respostaFF !== undefined) {
+        var pags = respostaFF.total_de_paginas;
 
-            try {
-                while (contador < pags) {
-                    contador++;
-                    param[0].pagina = contador;
-                    const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param);
+        try {
+            while (contador < pags) {
+                contador++;
+                param[0].pagina = contador;
+                const resposta = await consultaProdutosAtualizados(chaveFF, 'ListarProdutosResumido', url + '/geral/produtos/', param);
+                await esperar(2000)
 
-                    for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
-                        setTimeout(() => {
-                            console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
-                            fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
-                        }, i * 3000);
-                    }
-                    await esperar(150000);
+                for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
+
+                    console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
+                    await fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
+
+                    // if (i === 21) {
+                    //     break
+                    // }
                 }
-            } catch (error) {
-                // Escreve no arquivo .json em caso de erro
-                const errorMessage = `Erro ao consultar produtos: verificarEstoque()`;
-                console.log(errorMessage, error, new Date().toLocaleString());
-                await logResponse(errorMessage, "Cannot read properties of undefined (reading 'produto_servico_resumido')", 'errorLog');
+                //break
             }
+        } catch (error) {
+            // Escreve no arquivo .json em caso de erro
+            const errorMessage = `Erro ao consultar produtos: verificarEstoque()`;
+            console.log(errorMessage, error, new Date().toLocaleString());
+            await logResponse(errorMessage, "Cannot read properties of undefined (reading 'produto_servico_resumido')", 'errorLog');
         }
-        else {
-            console.log("Não encontrou produtos");
-        }
+    }
+    else {
+        console.log("Não encontrou produtos");
+    }
 
 
 }
@@ -84,7 +89,7 @@ async function logResponse(title, message, arquivo) {
     };
     try {
         // Lê o conteúdo atual do arquivo 'errorLog.json'
-        const currentContent = await fsPromises.readFile(arquivo+'.json', 'utf-8');
+        const currentContent = await fsPromises.readFile(arquivo + '.json', 'utf-8');
         const currentData = JSON.parse(currentContent);
         currentData.push(errorInfo);
         const newDataJson = JSON.stringify(currentData, null, 2);
@@ -101,6 +106,7 @@ async function logResponse(title, message, arquivo) {
 }
 
 async function esperar(ms) {
+    console.log("Esperar: ", ms)
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
@@ -108,78 +114,88 @@ async function esperar(ms) {
 
 async function consultaProdutosAtualizados(empresa, metodo, url, param) {
     let data = JSON.stringify({
-    "call": metodo,
-    "app_key": empresa.app_key,
-    "app_secret": empresa.app_secret,
-    "param": param
+        "call": metodo,
+        "app_key": empresa.app_key,
+        "app_secret": empresa.app_secret,
+        "param": param
     });
 
     let config = {
-    method: 'post',
-    maxBodyLength: Infinity,
-    url: url,
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    data : data
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: url,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: data
     };
+    await esperar(1000)
 
+    try {
+        const response = await axios.request(config);
+        const data = response.data;
+        if (response.status === 200) { return data; }
 
-try {
-    const response = await axios.request(config);
-    const data = response.data;
-
-    return data;
-} catch (error) {
-    const errorMessage = `Erro ao consultar Produtos: ${metodo}`;
-    console.error(errorMessage, error.code, new Date().toLocaleString());
-    await logResponse(errorMessage, error.code, 'errorLog');
-}
+    } catch (error) {
+        const errorMessage = `Erro ao consultar Produtos: ${metodo}`;
+        console.error(errorMessage, error.code, new Date().toLocaleString());
+        console.log(param)
+        await logResponse(errorMessage, error, 'errorLog');
+        return error
+    }
 
 }
 
 async function atualizar(codigo) {
-    const dataHoje = format(hoje, "dd/MM/yyyy");
-    const consulta = [
-        {
-            codigo: codigo,
+    if (codigo !== undefined) {
+        const dataHoje = format(hoje, "dd/MM/yyyy");
+        const consulta = [
+            {
+                codigo: codigo,
+            }
+        ]
+
+        let estoque = 0;
+
+        const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
+        estoque = [
+            {
+                nIdProduto: respostaFF?.codigo_produto,
+                dDia: dataHoje,
+            }
+        ]
+
+        const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
+
+        const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
+        estoque = [
+            {
+                nIdProduto: respostaGF?.codigo_produto,
+                dDia: dataHoje,
+            }
+        ]
+        const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
+
+        const saldoEstoqueTotal = saldoEstoqueFF?.listaEstoque[0]?.nSaldo + saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0;
+
+        let modelo = {
+            "codigo": codigo,
+            "descricao": respostaFF?.descricao,
+            "valor_unitario": respostaFF?.valor_unitario,
+            "codigoFF": respostaFF?.codigo_produto,
+            "codigoGF": respostaGF?.codigo_produto,
+            "data_Atual": dataHoje,
+            "saldoEstoqueFF": saldoEstoqueFF?.listaEstoque[0]?.nSaldo,
+            "saldoEstoqueGF": saldoEstoqueGF?.listaEstoque[0]?.nSaldo,
+            "saldoEstoqueTotal": saldoEstoqueTotal,
+            "EstoqueMinimo": saldoEstoqueFF?.listaEstoque[0]?.nEstoqueMinimo
         }
-    ]
-
-    let estoque = 0;
-
-    const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-
-    estoque = [
-        {
-            nIdProduto: respostaFF?.codigo_produto,
-            dDia: dataHoje,
-        }
-    ]
-    const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-    const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-    estoque = [
-        {
-            nIdProduto: respostaGF?.codigo_produto,
-            dDia: dataHoje,
-        }
-    ]
-    const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-    const saldoEstoqueTotal = saldoEstoqueFF?.listaEstoque[0]?.nSaldo  + saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0;
-
-    let modelo = {
-        "codigo": codigo,
-        "descricao": respostaFF?.descricao,
-        "valor_unitario": respostaFF?.valor_unitario,
-        "codigoFF": respostaFF?.codigo_produto,
-        "codigoGF": respostaGF?.codigo_produto,
-        "data_Atual": dataHoje,
-        "saldoEstoqueFF": saldoEstoqueFF?.listaEstoque[0]?.nSaldo,
-        "saldoEstoqueGF": saldoEstoqueGF?.listaEstoque[0]?.nSaldo,
-        "saldoEstoqueTotal": saldoEstoqueTotal,
+        console.log(modelo);
+        await updateOneMongo(modelo);
+    } else {
+        console.log(codigo, " sem código?")
     }
-    // console.log(modelo);
-    await updateOneMongo(modelo);
+
 }
 
 async function updateOneMongo(obj) {
@@ -191,67 +207,62 @@ async function updateOneMongo(obj) {
             $set: obj,
         },
         { upsert: true } // Atualiza se existir, insere se não existir
-        );
-        console.log(`Produto ${respostaDB?.codigo} atualizado!`);
-        const successMessage = `Atualização bem sucedida:`;
-        await logResponse(successMessage, obj.codigo, 'successLog');
+    );
+    console.log(`Produto ${respostaDB?.codigo} atualizado!`);
+    const successMessage = `Atualização bem sucedida:`;
+    await logResponse(successMessage, obj.codigo, 'successLog');
 
 
 }
 
+async function novoEmail(estoqueMinimo, saldo) {
+    let produto = ''
+    if (estoqueMinimo != 0) {
+        if (saldo < estoqueMinimo) {
+            console.log("Estoque abaixo do mínimo!!");
+            const dados = "Código Geral: " + codProd[i].codigo +
+                "\n Descrição: " + codProd[i].descricao +
+                "\n Código FF: " + codProd[i].codigoFF + " = " + saldoFF + " Quantidades" +
+                "\n Código GF: " + codProd[i].codigoGF + " = " + saldoGF + " Quantidades" +
+                "\n Estoque Mínimo: " + buscaFF.listaEstoque[0].nEstoqueMinimo +
+                "\n Saldo: " + saldo + "\n ----------------------\n"
+            produto = produto.concat(dados)
+        }
+    }
+    await email(produto) // Função mandar e-mail
+    console.log('ATUALIZADO!!')
+    return produto
+}
+
 async function estoqueMinimo() {
+    
     try {
         // Busca todos os arquivos onde codigoGF EXISTE
-        const codProd = await db.collection("produtos").find({ codigoGF: { $exists: true } }).toArray()
-
-        // console.log('DADOS FF')
+        const codProd = await db.collection("produtos").find({ codigoFF: { $exists: true } }).toArray()
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
         for (let i = 0; i < codProd.length; i++) {
             // Pausa de 3 segundos para não dar erro no Omie
-            await esperar(3000)
+            
             var data = hoje.toLocaleDateString()
-            console.log("Linha:", i+1, "de", codProd.length)
-            console.log("Produto: ", codProd[i].codigo)
-            var estoque = 0;
-            estoque = [
-                {
-                    nIdProduto: codProd[i].codigoGF,
-                    dDia: data,
-                }
-            ]
+            console.log("Linha:", i + 1, "de", codProd.length)
+            //console.log("Produto: ", codProd[i].codigo)
+            //console.log("Estoque Mínimo: ", codProd[i].EstoqueMinimo)
+            if (codProd[i].EstoqueMinimo !== undefined && codProd[i].EstoqueMinimo != 0) {
+                if (codProd[i].saldoEstoqueTotal !== undefined) {
+                    console.log("ESTOQUES", codProd[i].saldoEstoqueTotal);
 
-            // Entra na função buscaEstoque() com código do produto e as chaves
-            const buscaGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-
-            estoque = [
-                {
-                    nIdProduto: codProd[i].codigoFF,
-                    dDia: data,
-                }
-            ]
-            // Entra na função buscaEstoque() com código do produto e as chaves
-            const buscaFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-
-            // Faz calculo para saber Saldo do Estoque
-            if (buscaFF.listaEstoque[0] !== undefined) {
-                if (buscaFF.listaEstoque[0].fisico !== undefined) {
-                    console.log("ESTOQUES", buscaFF.listaEstoque[0].fisico, buscaGF.listaEstoque[0].fisico);
-                    const saldoFF = buscaFF.listaEstoque[0].fisico - 100000;
-                    const saldoGF = buscaGF.listaEstoque[0].fisico || 0;
-                    const saldo = saldoFF + saldoGF;
-                    if (buscaFF.listaEstoque[0].nEstoqueMinimo != 0) {
-                        if (saldo < buscaFF.listaEstoque[0].nEstoqueMinimo) {
-                            console.log("Estoque abaixo do mínimo!!");
-                            const dados = "Código Geral: " + codProd[i].codigo +
-                                "\n Descrição: " + codProd[i].descricao +
-                                "\n Código FF: " + codProd[i].codigoFF + " = " + saldoFF + " Quantidades" +
-                                "\n Código GF: " + codProd[i].codigoGF + " = " + saldoGF + " Quantidades" +
-                                "\n Estoque Mínimo: " + buscaFF.listaEstoque[0].nEstoqueMinimo +
-                                "\n Saldo: " + saldo + "\n ----------------------\n"
-                            produto = produto.concat(dados)
-                        }
+                    if (codProd[i].saldoEstoqueTotal < codProd[i].EstoqueMinimo) {
+                        console.log("Estoque abaixo do mínimo!!");
+                        const dados = "Código Geral: " + codProd[i].codigo +
+                            "\n Descrição: " + codProd[i].descricao +
+                            "\n Código FF: " + codProd[i].codigoFF + " = " + codProd[i].saldoFF + " Quantidades" +
+                            "\n Código GF: " + codProd[i].codigoGF + " = " + codProd[i].saldoGF + " Quantidades" +
+                            "\n Estoque Mínimo: " + codProd[i].EstoqueMinimo +
+                            "\n Saldo: " + codProd[i].saldoEstoqueTotal + "\n ----------------------\n"
+                        produto = produto.concat(dados)
                     }
+
                 }
                 else {
                     console.log("Não encontrou estoque no produto", codProd[i].codigo);
@@ -259,9 +270,10 @@ async function estoqueMinimo() {
 
             }
             else {
-                console.log("Não tem estoque");
-                await excluirBD(codProd[i].codigo)
+                console.log(`${codProd[i].codigo} não tem estoque mínimo definido ou é igual à ZERO -> ${codProd[i].EstoqueMinimo}`);
+                // await excluirBD(codProd[i].codigo)
             }
+            // if (i === 10 ) {break}
         }
         console.log(produto)
         await email(produto) // Função mandar e-mail
@@ -341,5 +353,6 @@ export default {
     atualizar,
     estoqueMinimo,
     excluirBD,
+    esperar,
     email
 };

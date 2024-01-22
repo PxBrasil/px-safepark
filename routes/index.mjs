@@ -11,21 +11,21 @@ router.get('/start', function(req, res, next) { // /start?dias=3 ou /start
     console.log("Atualização de Estoque -",new Date().toLocaleString());
     px.verificarEstoque(req.query.dias || "3");
     // Fazer a cada 30 minutos
-    cron.schedule('0 * * * *', () => {
-        console.log("Atualização de Estoque -",new Date().toLocaleString());
-        px.verificarEstoque(req.query.dias || "3");
-    });
+    // cron.schedule('0 * * * *', () => {
+    //     console.log("Atualização de Estoque -",new Date().toLocaleString());
+    //     px.verificarEstoque(req.query.dias || "3");
+    // });
     res.send('Essa rota irá começar a atualizar os produtos!');
 });
 
-router.get('/atualizar', function(req, res, next) { // /atualizar?codigo=SINISO012.3
-    px.atualizar(req.query.codigo)
+router.get('/atualizar', async function (req, res, next) { // /atualizar?codigo=SINISO012.3
+    await px.atualizar(req.query.codigo)
     res.send('Essa rota irá atualizar o produto ' + req.query.codigo);
 });
 
 router.get('/estoqueMinimo', function(req, res, next) { // /estoqueMinimo
     console.log("Estoque mínimo",new Date().toLocaleString());
-    // px.estoqueMinimo()
+    px.estoqueMinimo()
     // Fazer todo dia as 18h10
     cron.schedule('10 18 * * *', () => {
         console.log("Estoque mínimo -",new Date().toLocaleString());
