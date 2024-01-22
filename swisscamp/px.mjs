@@ -235,7 +235,7 @@ async function novoEmail(estoqueMinimo, saldo) {
 }
 
 async function estoqueMinimo() {
-    
+
     try {
         // Busca todos os arquivos onde codigoGF EXISTE
         const codProd = await db.collection("produtos").find({ codigoFF: { $exists: true } }).toArray()
@@ -243,7 +243,7 @@ async function estoqueMinimo() {
         // Passa por todos os valores que encontrou no Banco de Dados
         for (let i = 0; i < codProd.length; i++) {
             // Pausa de 3 segundos para não dar erro no Omie
-            
+
             var data = hoje.toLocaleDateString()
             console.log("Linha:", i + 1, "de", codProd.length)
             //console.log("Produto: ", codProd[i].codigo)
@@ -273,10 +273,10 @@ async function estoqueMinimo() {
                 console.log(`${codProd[i].codigo} não tem estoque mínimo definido ou é igual à ZERO -> ${codProd[i].EstoqueMinimo}`);
                 // await excluirBD(codProd[i].codigo)
             }
-            // if (i === 10 ) {break}
         }
         console.log(produto)
         await email(produto) // Função mandar e-mail
+        await wpp(produto)
         console.log('ATUALIZADO!!')
 
     } catch (e) {
@@ -323,6 +323,34 @@ async function email(produto) {
         await logResponse(errorMessage, error.code, 'errorLog');
     }
 }
+
+async function wpp(params) {
+    const dados = JSON.stringify({
+        "mensagem":params
+    });
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `https://notifica.plenitudex.com/omie/estoquebaixo`,
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+        },
+        data: dados
+    };
+
+    const resposta = await axios.request(config)
+        .then((response) => {
+            console.log('Sucesso: ',response.status);
+            return response.status
+        })
+        .catch((error) => {
+            console.log('Erro: ',error);
+            return 'Erro na requisição: '+error.config.data
+        });
+
+    return resposta
+  };
 
 async function excluirBD(cod) {
     // let cod = 'SINISO012.3'
