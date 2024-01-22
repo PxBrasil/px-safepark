@@ -256,8 +256,6 @@ async function estoqueMinimo() {
                         console.log("Estoque abaixo do mínimo!!");
                         const dados = "Código Geral: " + codProd[i].codigo +
                             "\n Descrição: " + codProd[i].descricao +
-                            "\n Código FF: " + codProd[i].codigoFF + " = " + codProd[i].saldoFF + " Quantidades" +
-                            "\n Código GF: " + codProd[i].codigoGF + " = " + codProd[i].saldoGF + " Quantidades" +
                             "\n Estoque Mínimo: " + codProd[i].EstoqueMinimo +
                             "\n Saldo: " + codProd[i].saldoEstoqueTotal + "\n ----------------------\n"
                         produto = produto.concat(dados)
