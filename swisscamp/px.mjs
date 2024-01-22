@@ -156,6 +156,8 @@ async function atualizar(codigo) {
         ]
 
         let estoque = 0;
+        let sdFF = 0
+        let sdGF = 0 
 
         const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
         estoque = [
@@ -166,17 +168,24 @@ async function atualizar(codigo) {
         ]
 
         const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-
+        
+        sdFF = saldoEstoqueFF?.listaEstoque[0]?.nSaldo
+        
         const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-        estoque = [
-            {
-                nIdProduto: respostaGF?.codigo_produto,
-                dDia: dataHoje,
-            }
-        ]
-        const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
+               
+        if (respostaGF.codigo_produto !== undefined) {
+            estoque = [
+                {
+                    nIdProduto: respostaGF?.codigo_produto,
+                    dDia: dataHoje,
+                }
+            ]
+            const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
+            sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0
+        }
+                
 
-        const saldoEstoqueTotal = saldoEstoqueFF?.listaEstoque[0]?.nSaldo + saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0;
+        const saldoEstoqueTotal = sdFF + sdGF;
 
         let modelo = {
             "codigo": codigo,
@@ -185,8 +194,8 @@ async function atualizar(codigo) {
             "codigoFF": respostaFF?.codigo_produto,
             "codigoGF": respostaGF?.codigo_produto,
             "data_Atual": dataHoje,
-            "saldoEstoqueFF": saldoEstoqueFF?.listaEstoque[0]?.nSaldo,
-            "saldoEstoqueGF": saldoEstoqueGF?.listaEstoque[0]?.nSaldo,
+            "saldoEstoqueFF": sdFF,
+            "saldoEstoqueGF": sdGF,
             "saldoEstoqueTotal": saldoEstoqueTotal,
             "EstoqueMinimo": saldoEstoqueFF?.listaEstoque[0]?.nEstoqueMinimo
         }
