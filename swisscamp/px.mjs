@@ -313,6 +313,7 @@ async function estoqueMinimo() {
     try {
         // Busca todos os arquivos onde codigoGF EXISTE
         const codProd = await db.collection("produtos").find({ codigoFF: { $exists: true } }).toArray()
+        console.log(codProd)
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
         for (let i = 0; i < codProd.length; i++) {
@@ -322,7 +323,7 @@ async function estoqueMinimo() {
             console.log("Linha:", i + 1, "de", codProd.length)
             //console.log("Produto: ", codProd[i].codigo)
             //console.log("Estoque Mínimo: ", codProd[i].EstoqueMinimo)
-            if (codProd[i].EstoqueMinimo !== undefined && codProd[i].EstoqueMinimo != 0) {
+            if (codProd[i].EstoqueMinimo !== undefined && codProd[i].EstoqueMinimo !== 0) {
                 if (codProd[i].saldoEstoqueTotal !== undefined) {
                     console.log("ESTOQUES", codProd[i].saldoEstoqueTotal);
 
@@ -346,8 +347,11 @@ async function estoqueMinimo() {
                 // await excluirBD(codProd[i].codigo)
             }
         }
+        if (produto === '') {
+            produto = `Não tem ESTOQUE abaixo do mínimo configurado pela ferramenta Omie`
+        }
         console.log(produto)
-        await email(produto) // Função mandar e-mail
+        //await email(produto) // Função mandar e-mail
         await wpp(produto)
         console.log('ATUALIZADO!!')
 
