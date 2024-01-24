@@ -147,6 +147,59 @@ async function consultaProdutosAtualizados(empresa, metodo, url, param) {
 }
 
 async function atualizar(codigo) {
+    try {
+        if (codigo !== undefined) {
+            const dataHoje = format(hoje, "dd/MM/yyyy");
+            const consulta = { codigo: codigo };
+
+            let saldoEstoqueFF = 0;
+            let saldoEstoqueGF = 0;
+            let estoqueMinimo = 0;
+
+            const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta);
+
+            if (respostaFF.codigo_produto !== undefined) {
+                console.log("Produto não encontrado no Omie");
+                const estoqueFF = { nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje };
+                saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0].nSaldo;
+                estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0].nEstoqueMinimo;
+            }
+
+            const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta);
+
+            if (respostaGF.codigo_produto !== undefined) {
+                const estoqueGF = { nIdProduto: respostaGF?.codigo_produto, dDia: dataHoje };
+                saldoEstoqueGF = (await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueGF)).listaEstoque[0]?.nSaldo || 0;
+            }
+
+            const saldoEstoqueTotal = saldoEstoqueFF + saldoEstoqueGF;
+
+            const modelo = {
+                codigo: codigo,
+                descricao: respostaFF?.descricao,
+                valor_unitario: respostaFF?.valor_unitario,
+                codigoFF: respostaFF?.codigo_produto,
+                codigoGF: respostaGF?.codigo_produto,
+                data_Atual: dataHoje,
+                saldoEstoqueFF: saldoEstoqueFF,
+                saldoEstoqueGF: saldoEstoqueGF,
+                saldoEstoqueTotal: saldoEstoqueTotal,
+                EstoqueMinimo: estoqueMinimo
+            };
+
+            console.log(modelo);
+            await updateOneMongo(modelo);
+        } else {
+            console.log(codigo, " sem código?");
+        }
+    } catch (error) {
+        console.error("Erro ao executar a função:", error);
+    }
+}
+
+
+
+async function atualizarBk(codigo) {
     if (codigo !== undefined) {
         const dataHoje = format(hoje, "dd/MM/yyyy");
         const consulta = [
