@@ -58,7 +58,8 @@ async function verificarEstoque(dias) {
                 for (let i = 0; i < resposta.produto_servico_resumido.length; i++) {
 
                     console.log(`Página ${contador} - ${i + 1} de ${resposta.produto_servico_resumido.length} - ${resposta.produto_servico_resumido[i].codigo}`);
-                    await fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
+                    await atualizar(resposta.produto_servico_resumido[i].codigo)
+                    //await fetch('http://localhost:3000/atualizar?codigo=' + resposta.produto_servico_resumido[i].codigo);
 
                     // if (i === 21) {
                     //     break
