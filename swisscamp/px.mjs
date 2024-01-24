@@ -151,7 +151,7 @@ async function atualizar(codigo) {
     try {
         if (codigo !== undefined) {
             const dataHoje = format(hoje, "dd/MM/yyyy");
-            const consulta = { codigo: codigo };
+            const consulta = [{ codigo: codigo }];
 
             let saldoEstoqueFF = 0;
             let saldoEstoqueGF = 0;
@@ -159,18 +159,23 @@ async function atualizar(codigo) {
 
             const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta);
 
-            if (respostaFF.codigo_produto !== undefined) {
+            if (respostaFF.codigo_produto === undefined) {
                 console.log("Produto não encontrado no Omie");
-                const estoqueFF = { nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje };
-                saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0].nSaldo;
-                estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0].nEstoqueMinimo;
+            }else{
+                const estoqueFF = [{ nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje }];
+                saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nSaldo;
+                estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nEstoqueMinimo;
+                
             }
 
             const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta);
 
-            if (respostaGF.codigo_produto !== undefined) {
-                const estoqueGF = { nIdProduto: respostaGF?.codigo_produto, dDia: dataHoje };
+            if (respostaGF.codigo_produto === undefined) {
+                console.log("Produto não encontrado no Omie");
+            }else{
+                const estoqueGF = [{ nIdProduto: respostaGF?.codigo_produto, dDia: dataHoje }];
                 saldoEstoqueGF = (await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueGF)).listaEstoque[0]?.nSaldo || 0;
+                
             }
 
             const saldoEstoqueTotal = saldoEstoqueFF + saldoEstoqueGF;
