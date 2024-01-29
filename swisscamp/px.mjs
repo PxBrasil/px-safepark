@@ -165,7 +165,7 @@ async function atualizar(codigo) {
                 const estoqueFF = [{ nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje }];
                 saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nSaldo;
                 estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nEstoqueMinimo;
-                
+
             }
 
             const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta);
@@ -175,10 +175,10 @@ async function atualizar(codigo) {
             }else{
                 const estoqueGF = [{ nIdProduto: respostaGF?.codigo_produto, dDia: dataHoje }];
                 saldoEstoqueGF = (await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueGF)).listaEstoque[0]?.nSaldo || 0;
-                
+
             }
 
-            const saldoEstoqueTotal = saldoEstoqueFF + saldoEstoqueGF;
+            const saldoEstoqueTotal = saldoEstoqueFF + saldoEstoqueGF - 100000;
 
             const modelo = {
                 codigo: codigo,
@@ -230,7 +230,7 @@ async function atualizarBk(codigo) {
             ]
             const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
 
-            sdFF = saldoEstoqueFF.listaEstoque[0].nSaldo
+            sdFF = saldoEstoqueFF.listaEstoque[0].nSaldo - 100000
 
             estoqueMinimo = saldoEstoqueFF.listaEstoque[0].nEstoqueMinimo
 
@@ -246,9 +246,11 @@ async function atualizarBk(codigo) {
                 }
             ]
             const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-            sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo - 100000 || 0
+            sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo || 0
         }
 
+        console.log("Estoque FF: ", sdFF)
+        console.log("Estoque GF: ", sdGF)
 
         const saldoEstoqueTotal = sdFF + sdGF;
 
