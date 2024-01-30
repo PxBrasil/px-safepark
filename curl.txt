@@ -1,2 +1,3 @@
 curl -X "GET" http://localhost:3000/start
 curl -X "GET" http://localhost:3000/estoqueminimo
+curl -X "GET" http://localhost:3000/atualizar?codigo=SINLOMB001

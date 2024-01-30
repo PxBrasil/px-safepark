@@ -163,8 +163,8 @@ async function atualizar(codigo) {
                 console.log("Produto não encontrado no Omie");
             }else{
                 const estoqueFF = [{ nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje }];
-                saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nSaldo;
-                estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nEstoqueMinimo;
+                saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nSaldo || undefined;
+                estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nEstoqueMinimo || undefined;
 
             }
 
@@ -201,81 +201,6 @@ async function atualizar(codigo) {
     } catch (error) {
         console.error("Erro ao executar a função:", error);
     }
-}
-
-
-
-async function atualizarBk(codigo) {
-    if (codigo !== undefined) {
-        const dataHoje = format(hoje, "dd/MM/yyyy");
-        const consulta = [
-            {
-                codigo: codigo,
-            }
-        ]
-
-        let estoque = 0;
-        let estoqueMinimo = 0;
-        let sdFF = 0
-        let sdGF = 0
-
-        const respostaFF = await consultaProdutosAtualizados(chaveFF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-        if (respostaFF.codigo_produto !== undefined) {
-            console.log("Não encontrou o produto no Omie");
-            estoque = [
-                {
-                    nIdProduto: respostaFF?.codigo_produto,
-                    dDia: dataHoje,
-                }
-            ]
-            const saldoEstoqueFF = await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-
-            sdFF = saldoEstoqueFF.listaEstoque[0].nSaldo - 100000
-
-            estoqueMinimo = saldoEstoqueFF.listaEstoque[0].nEstoqueMinimo
-
-        }else{
-            console.log(`${respostaFF.codigo_produto} ->>>>>>>>>> é undefined`)
-        }
-
-        const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
-
-        if (respostaGF.codigo_produto !== undefined) {
-            estoque = [
-                {
-                    nIdProduto: respostaGF?.codigo_produto,
-                    dDia: dataHoje,
-                }
-            ]
-            const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
-            sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo || 0
-        }else{
-            console.log(`${respostaFF.codigo_produto} ->>>>>>>>>> é undefined`)
-        }
-
-        console.log("Estoque FF: ", sdFF)
-        console.log("Estoque GF: ", sdGF)
-
-        const saldoEstoqueTotal = sdFF + sdGF;
-
-        let modelo = {
-            "codigo": codigo,
-            "descricao": respostaFF?.descricao,
-            "valor_unitario": respostaFF?.valor_unitario,
-            "codigoFF": respostaFF?.codigo_produto,
-            "codigoGF": respostaGF?.codigo_produto,
-            "data_Atual": dataHoje,
-            "saldoEstoqueFF": sdFF,
-            "saldoEstoqueGF": sdGF,
-            "saldoEstoqueTotal": saldoEstoqueTotal,
-            "EstoqueMinimo": estoqueMinimo
-        }
-        console.log(modelo);
-        await updateOneMongo(modelo);
-    } else {
-        console.log(codigo, " sem código?")
-    }
-
 }
 
 async function updateOneMongo(obj) {

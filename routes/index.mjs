@@ -11,7 +11,7 @@ router.get('/start', function(req, res, next) { // /start?dias=3 ou /start
     console.log("Atualização de Estoque -",new Date().toLocaleString());
     px.verificarEstoque(req.query.dias || "3");
     // Fazer a cada 2 horas
-    cron.schedule('0 */2 * * *', () => {
+    cron.schedule('0 */3 * * *', () => {
         console.log("Atualização de Estoque -",new Date().toLocaleString());
         px.verificarEstoque(req.query.dias || "3");
     });
