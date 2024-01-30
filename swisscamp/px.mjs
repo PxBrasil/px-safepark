@@ -234,6 +234,8 @@ async function atualizarBk(codigo) {
 
             estoqueMinimo = saldoEstoqueFF.listaEstoque[0].nEstoqueMinimo
 
+        }else{
+            console.log(`${respostaFF.codigo_produto} ->>>>>>>>>> é undefined`)
         }
 
         const respostaGF = await consultaProdutosAtualizados(chaveGF, 'ConsultarProduto', url + '/geral/produtos/', consulta)
@@ -247,6 +249,8 @@ async function atualizarBk(codigo) {
             ]
             const saldoEstoqueGF = await consultaProdutosAtualizados(chaveGF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoque)
             sdGF =  saldoEstoqueGF?.listaEstoque[0]?.nSaldo || 0
+        }else{
+            console.log(`${respostaFF.codigo_produto} ->>>>>>>>>> é undefined`)
         }
 
         console.log("Estoque FF: ", sdFF)
