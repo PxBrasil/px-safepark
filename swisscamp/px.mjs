@@ -77,8 +77,6 @@ async function verificarEstoque(dias) {
     else {
         console.log("Não encontrou produtos");
     }
-
-
 }
 
 async function logResponse(title, message, arquivo) {
@@ -282,7 +280,7 @@ async function estoqueMinimo() {
             produto = `Não tem ESTOQUE abaixo do mínimo configurado pela ferramenta Omie`
         }
         console.log(produto)
-        //await email(produto) // Função mandar e-mail
+        await email(produto) // Função mandar e-mail
         await wpp(produto)
         console.log('ATUALIZADO!!')
 
