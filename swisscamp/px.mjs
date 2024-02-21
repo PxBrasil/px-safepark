@@ -244,7 +244,8 @@ async function estoqueMinimo() {
 
     try {
         // Busca todos os arquivos onde codigoGF EXISTE
-        const codProd = await db.collection("produtos").find({ codigoFF: { $exists: true } }).toArray()
+        const codProd = await db.collection("produtos").find({ codigoFF: { $exists: true },
+            EstoqueMinimo: { $gt: 0 } }).toArray()
         console.log(codProd)
         var produto = ''
         // Passa por todos os valores que encontrou no Banco de Dados
