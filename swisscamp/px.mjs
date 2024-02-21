@@ -144,6 +144,8 @@ async function consultaProdutosAtualizados(empresa, metodo, url, param) {
     }
 
 }
+//comentario: novo
+
 
 async function atualizar(codigo) {
     try {
@@ -163,6 +165,7 @@ async function atualizar(codigo) {
                 const estoqueFF = [{ nIdProduto: respostaFF?.codigo_produto, dDia: dataHoje }];
                 saldoEstoqueFF = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nSaldo || undefined;
                 estoqueMinimo = (await consultaProdutosAtualizados(chaveFF, "ObterEstoqueProduto", url + '/estoque/resumo/', estoqueFF)).listaEstoque[0]?.nEstoqueMinimo || undefined;
+                console.log(estoqueMinimo, saldoEstoqueFF, estoqueFF)
 
             }
 
